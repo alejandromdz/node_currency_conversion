@@ -12,15 +12,20 @@
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
     "react-redux": "^5.0.4",
-    "redux": "^3.6.0"
+    "redux": "^3.6.0",
+    "redux-logger": "^3.0.1",
+    "redux-thunk": "^2.2.0",
+    "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
-    "awesome-typescript-loader": "^3.1.2",
-    "source-map-loader": "^0.2.1",
-    "typescript": "^2.2.2",
     "@types/react": "^15.0.22",
     "@types/react-dom": "^15.5.0",
     "@types/react-redux": "^4.4.39",
-    "@types/redux": "^3.6.0"
+    "@types/redux": "^3.6.0",
+    "@types/redux-logger": "^3.0.0",
+    "@types/redux-thunk": "^2.1.0",
+    "awesome-typescript-loader": "^3.1.2",
+    "source-map-loader": "^0.2.1",
+    "typescript": "^2.2.2"
   }
 }

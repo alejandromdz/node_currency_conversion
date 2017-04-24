@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Header} from './Header';
-import {List} from './List';
+import List from './List';
 
 export interface AppProps 
 {
