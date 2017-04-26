@@ -1,19 +1,32 @@
 import * as React from 'react';
-import {Header} from './Header';
-import List from './List';
+import LoginForm from '../components/LoginForm'
+import List from '../components/List';
+import Calculator from '../components/Calculator';
+import {connect} from 'react-redux';
 
-export interface AppProps 
-{
-   
-}
-
-export class App extends React.Component<AppProps,undefined>{
-    render(){
-        return (
-            <div>
-            <Header/>
-            <List/>
-            </div>
-        );
+function mapStateToProps(state: any) {
+    const { isLogged } = state.login;
+    return {
+        isLogged
     }
 }
+
+class App extends React.Component<any,any>{
+    
+    render(){
+        if (this.props.isLogged)
+        return(
+            <div>
+            <List/>
+            <Calculator/>
+            </div>
+            
+        )
+        else return (
+            
+            <LoginForm/>
+        )
+    }
+}
+
+export default connect(mapStateToProps)(App);

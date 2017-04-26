@@ -1,0 +1,32 @@
+{
+  "name": "server",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build": "gulp clean build",
+    "start": "npm run build && node ./build/server"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "moment": "^2.15.0",
+    "mongoose": "^4.9.6",
+    "morgan": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt-nodejs": "0.0.30",
+    "@types/body-parser": "^1.16.3",
+    "@types/express": "^4.0.35",
+    "@types/mongoose": "^4.7.11",
+    "@types/morgan": "^1.7.32",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-typescript": "^3.1.6",
+    "gulp-watch": "^4.3.11",
+    "typescript": "^2.2.2"
+  }
+}

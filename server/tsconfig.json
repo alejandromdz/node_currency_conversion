@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "outDir": "./build/",
+        "target": "es5",
+        "module": "commonjs",
+        "noEmitOnError": true,
+        "noImplicitAny": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+      "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "build"
+  ],
+  "compileOnSave": false
+}

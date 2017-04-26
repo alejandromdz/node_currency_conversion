@@ -3,7 +3,9 @@
 const purchase = (state: any = {
     isFetching: false,
     didInvalidate: false,
-    items: []
+    items: [],
+    calculatorData:{fromCurrency:'USD',toCurrency:'USD'},
+    value:0
 }, action:any = { type: '' }) => {
     switch (action.type) {
         case 'FETCH_RATES_FAILED':
@@ -24,7 +26,19 @@ const purchase = (state: any = {
                 didInvalidate: false,
                 items: action.payload.rates
             }
+        case 'CHANGE_CALCULATOR':
+        return {
+            ...state,
+            calculatorData:{
+                ...action.newState
+            }
 
+        }
+        case 'CHANGE_VALUE':
+        return{
+            ...state,
+            value:action.newValue
+        }
         default: return state;
     }
 }

@@ -15,14 +15,21 @@ class List extends React.Component<any, any>{
         this.props.dispatch(fetchRates());
     }
     render() {
-        return (
-            <ul>
-                {Object.keys(this.props.items).map((currency: string, idx: number) => {
-                    return (<li key={idx}>
-                        {currency}:{this.props.items[currency]}
-                    </li>)
-                })}
-            </ul>
+        return (<div>
+            <h1 className="display-4">Transaction History</h1>
+            <table className="table-inverse">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Transaction</th>
+                        <th>Ammount</th>
+                    </tr>
+                </thead>
+                <tbody>
+               
+                </tbody>
+            </table>
+            </div>
         )
     }
 }
