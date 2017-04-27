@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dateformat": "^2.0.0",
     "history": "^4.6.1",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
@@ -20,6 +21,7 @@
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
+    "@types/dateformat": "^1.0.1",
     "@types/history": "^4.5.0",
     "@types/react": "^15.0.22",
     "@types/react-dom": "^15.5.0",

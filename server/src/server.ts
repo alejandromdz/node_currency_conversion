@@ -7,7 +7,8 @@ import * as morgan from 'morgan';
 import * as mongoose from 'mongoose';
 import * as indexRouter from "./routes/index";
 import * as usersRouter from "./routes/users";
-import userModel from './models';
+import * as transactionsRouter from "./routes/transactions"
+import User from './models/user';
 
 class HttpServer {
     public app: express.Application;
@@ -23,25 +24,25 @@ class HttpServer {
 
         this.IndexRoutes();
         this.UsersRoutes();
+        this.TransactionRoutes();
     }
     private ExpressConfiguration() {
-        this.app.use(bodyParser.urlencoded({ extended: true }));
+        this.app.use(bodyParser.urlencoded({ extended: false }));
         this.app.use(bodyParser.json());
 
         this.app.use(morgan('dev'));
-        this.app.use(function(err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
+        this.app.use(function (err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
             var error = new Error("Not Found");
             err.status = 404;
             next(err);
         });
 
         // serve static files
-        this.app.use(express.static(path.join(__dirname+'/../../public')))
+        this.app.use(express.static(path.join(__dirname + '/../../public')))
     }
     private IndexRoutes() {
         this.router = express.Router();
         var index: indexRouter.Index = new indexRouter.Index();
-       
         this.router.get("/", index.get);
         this.app.use("/", this.router);
     }
@@ -56,17 +57,19 @@ class HttpServer {
         this.router.delete("/", users.delete);
         this.app.use("/api/users", this.router);
     }
+    private TransactionRoutes() {
+        this.router = express.Router();
+        var transactions: transactionsRouter.Transactions = new transactionsRouter.Transactions();
+        this.router.get("/all", transactions.all);
+        this.router.post("/", transactions.post);
+
+        this.app.use("/api/transactions", this.router);
+    }
 }
 
 const port: number = process.env.PORT || 8080;
 const dbUrl: string = 'mongodb://localhost/currency_app';
-const db:mongoose.MongooseThenable = mongoose.connect(dbUrl);
-
-const user = new userModel({
-    email: 'example@mail.com',
-    password: '123456'
-  });
-  user.save();
+const db: mongoose.MongooseThenable = mongoose.connect(dbUrl);
 
 let httpserver = HttpServer.bootstrap();
 let app = httpserver.app;

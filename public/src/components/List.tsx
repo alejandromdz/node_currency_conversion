@@ -1,34 +1,45 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { fetchRates } from '../actions';
+import { fetchTransactions } from '../actions';
+import * as dateFormat from 'dateformat';
 
 
 function mapStateToProps(state: any) {
-    const { isFetching, didInvalidate, items } = state.purchase;
+    const { isFetching, didInvalidate,transactions } = state.purchase;
     return {
-        isFetching, didInvalidate, items
+        isFetching, didInvalidate, transactions
     }
 }
 
 class List extends React.Component<any, any>{
-    componentWillMount() {
-        this.props.dispatch(fetchRates());
+    componentWillMount(){
+        this.props.dispatch(fetchTransactions())
     }
     render() {
         return (<div>
-            <h1 className="display-4">Transaction History</h1>
-            <table className="table-inverse">
+            <h1 className="display-5 m-2">Transaction History</h1>
+            <table className="table-inverse m-2">
                 <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Transaction</th>
-                        <th>Ammount</th>
+                    <tr className="p-2">
+                        <th className="p-2">Date</th>
+                        <th className="p-2">Transaction</th>
+                        <th className="p-2">Ammount</th>
                     </tr>
                 </thead>
                 <tbody>
-               
+               {this.props.transactions.map((trans:any,index:number)=>{
+                   const {date,transaction,concept,amount}=trans;
+                   console.log(date,transaction,concept,amount);
+               return (<tr key={index}>
+                   <td className="p-2">{dateFormat(date,'dd/mm/yyyy')}</td>
+                   <td className="p-2">{transaction}/{concept}</td>
+                   <td className="p-2">{amount}</td>
+                   
+               </tr>)
+               })}
                 </tbody>
             </table>
+           
             </div>
         )
     }

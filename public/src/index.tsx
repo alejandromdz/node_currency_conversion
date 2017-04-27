@@ -8,11 +8,13 @@ import thunk from 'redux-thunk';
 import App from './components/App'
 import purchase from './reducers/purchase';
 import login from './reducers/login';
+import transaction from './reducers/transaction';
 
 const midleware = applyMiddleware(thunk, createLogger())
 const reducer = combineReducers({
     purchase,
-    login
+    login,
+    transaction
 })
 const store = createStore(reducer, midleware);
 

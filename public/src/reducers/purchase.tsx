@@ -1,9 +1,9 @@
 
-
 const purchase = (state: any = {
     isFetching: false,
     didInvalidate: false,
     items: [],
+    transactions:[],
     calculatorData:{fromCurrency:'USD',toCurrency:'USD'},
     value:0
 }, action:any = { type: '' }) => {
@@ -32,12 +32,16 @@ const purchase = (state: any = {
             calculatorData:{
                 ...action.newState
             }
-
         }
         case 'CHANGE_VALUE':
         return{
             ...state,
             value:action.newValue
+        }
+        case 'FETCH_TRANSACTIONS_FULFILLED':
+        return{
+            ...state,
+            transactions:action.payload
         }
         default: return state;
     }
