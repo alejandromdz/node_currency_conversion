@@ -5,7 +5,8 @@ const purchase = (state: any = {
     items: [],
     transactions:[],
     calculatorData:{fromCurrency:'USD',toCurrency:'USD'},
-    value:0
+    value:0,
+    listCurrency:'USD'
 }, action:any = { type: '' }) => {
     switch (action.type) {
         case 'FETCH_RATES_FAILED':
@@ -43,6 +44,16 @@ const purchase = (state: any = {
             ...state,
             transactions:action.payload
         }
+         case 'POST_TRANSACTION_FULFILLED':
+            return {
+                ...state,
+                transactions:action.payload
+            }
+        case 'CHANGE_LIST_CURRENCY':
+            return{
+                ...state,
+                listCurrency:action.newValue
+            }
         default: return state;
     }
 }

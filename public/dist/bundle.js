@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 33);
+/******/ 	return __webpack_require__(__webpack_require__.s = 35);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -264,9 +264,9 @@ module.exports = React;
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_Provider__ = __webpack_require__(49);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__connect_connect__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_Provider__ = __webpack_require__(51);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__connect_connect__ = __webpack_require__(52);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Provider", function() { return __WEBPACK_IMPORTED_MODULE_0__components_Provider__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "connectAdvanced", function() { return __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "connect", function() { return __WEBPACK_IMPORTED_MODULE_2__connect_connect__["a"]; });
@@ -283,7 +283,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(67);
+__webpack_require__(69);
 function fetchRates() {
     return function (dispatch) {
         dispatch({ type: 'FETCH_RATES' });
@@ -324,23 +324,27 @@ function login(username, password) {
     };
 }
 exports.login = login;
-function postTransaction(data) {
+function postTransaction(data, listRate) {
     return function (dispatch) {
         dispatch({ type: 'POST_TRANSACTION' });
-        var payload = new FormData();
-        payload.append("json", JSON.stringify(data));
+        // Convert to USD before sending
+        var amount = data.amount, concept = data.concept, transaction = data.transaction;
+        amount = amount / listRate;
         fetch('api/transactions', {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             method: 'post',
-            body: JSON.stringify(data)
+            body: JSON.stringify({ amount: amount, concept: concept, transaction: transaction })
         })
-            .then(function () {
-            dispatch({ type: 'POST_TRANSACTION_FULFILLED' });
+            .then(function (response) { return response.json(); })
+            .catch(function (error) {
+            dispatch({ type: 'POST_TRANSACTION_FAILED' });
         })
-            .catch(function () { dispatch({ type: 'POST_TRANSACTION_REJECTED' }); });
+            .then(function (data) {
+            dispatch({ type: 'POST_TRANSACTION_FULFILLED', payload: data });
+        });
     };
 }
 exports.postTransaction = postTransaction;
@@ -360,6 +364,10 @@ function changeTransaction(newState) {
     return { type: 'CHANGE_TRANSACTION', newState: newState };
 }
 exports.changeTransaction = changeTransaction;
+function changeListCurrency(newValue) {
+    return { type: 'CHANGE_LIST_CURRENCY', newValue: newValue };
+}
+exports.changeListCurrency = changeListCurrency;
 
 
 /***/ }),
@@ -473,9 +481,9 @@ module.exports = invariant;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__baseGetTag_js__ = __webpack_require__(38);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__getPrototype_js__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__isObjectLike_js__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__baseGetTag_js__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__getPrototype_js__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__isObjectLike_js__ = __webpack_require__(47);
 
 
 
@@ -601,12 +609,12 @@ module.exports = g;
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__createStore__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__combineReducers__ = __webpack_require__(63);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__bindActionCreators__ = __webpack_require__(62);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__applyMiddleware__ = __webpack_require__(61);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__compose__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils_warning__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__createStore__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__combineReducers__ = __webpack_require__(65);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__bindActionCreators__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__applyMiddleware__ = __webpack_require__(63);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__compose__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils_warning__ = __webpack_require__(23);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "createStore", function() { return __WEBPACK_IMPORTED_MODULE_0__createStore__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "combineReducers", function() { return __WEBPACK_IMPORTED_MODULE_1__combineReducers__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "bindActionCreators", function() { return __WEBPACK_IMPORTED_MODULE_2__bindActionCreators__["a"]; });
@@ -634,6 +642,195 @@ if (process.env.NODE_ENV !== 'production' && typeof isCrushed.name === 'string' 
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var regexp = /\.?0+$/;
+function default_1(number) {
+    return number.toFixed(10).toString().replace(regexp, '');
+}
+exports.default = default_1;
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var currencySymbols = {
+    AED: "د.إ",
+    AFN: "؋",
+    ALL: "L",
+    ANG: "ƒ",
+    AOA: "Kz",
+    ARS: "$",
+    AUD: "$",
+    AWG: "ƒ",
+    AZN: "₼",
+    BAM: "KM",
+    BBD: "$",
+    BDT: "৳",
+    BGN: "лв",
+    BHD: ".د.ب",
+    BIF: "FBu",
+    BMD: "$",
+    BND: "$",
+    BOB: "Bs.",
+    BRL: "R$",
+    BSD: "$",
+    BTN: "Nu.",
+    BWP: "P",
+    BYR: "p.",
+    BZD: "BZ$",
+    CAD: "$",
+    CDF: "FC",
+    CHF: "Fr.",
+    CLP: "$",
+    CNY: "¥",
+    COP: "$",
+    CRC: "₡",
+    CUC: "$",
+    CUP: "₱",
+    CVE: "$",
+    CZK: "Kč",
+    DJF: "Fdj",
+    DKK: "kr",
+    DOP: "RD$",
+    DZD: "دج",
+    EEK: "kr",
+    EGP: "£",
+    ERN: "Nfk",
+    ETB: "Br",
+    EUR: "€",
+    FJD: "$",
+    FKP: "£",
+    GBP: "£",
+    GEL: "₾",
+    GGP: "£",
+    GHC: "₵",
+    GHS: "GH₵",
+    GIP: "£",
+    GMD: "D",
+    GNF: "FG",
+    GTQ: "Q",
+    GYD: "$",
+    HKD: "$",
+    HNL: "L",
+    HRK: "kn",
+    HTG: "G",
+    HUF: "Ft",
+    IDR: "Rp",
+    ILS: "₪",
+    IMP: "£",
+    INR: "₹",
+    IQD: "ع.د",
+    IRR: "﷼",
+    ISK: "kr",
+    JEP: "£",
+    JMD: "J$",
+    JPY: "¥",
+    KES: "KSh",
+    KGS: "лв",
+    KHR: "៛",
+    KMF: "CF",
+    KPW: "₩",
+    KRW: "₩",
+    KYD: "$",
+    KZT: "₸",
+    LAK: "₭",
+    LBP: "£",
+    LKR: "₨",
+    LRD: "$",
+    LSL: "M",
+    LTL: "Lt",
+    LVL: "Ls",
+    MAD: "MAD",
+    MDL: "lei",
+    MGA: "Ar",
+    MKD: "ден",
+    MMK: "K",
+    MNT: "₮",
+    MOP: "MOP$",
+    MUR: "₨",
+    MVR: "Rf",
+    MWK: "MK",
+    MXN: "$",
+    MYR: "RM",
+    MZN: "MT",
+    NAD: "$",
+    NGN: "₦",
+    NIO: "C$",
+    NOK: "kr",
+    NPR: "₨",
+    NZD: "$",
+    OMR: "﷼",
+    PAB: "B/.",
+    PEN: "S/.",
+    PGK: "K",
+    PHP: "₱",
+    PKR: "₨",
+    PLN: "zł",
+    PYG: "Gs",
+    QAR: "﷼",
+    RMB: "￥",
+    RON: "lei",
+    RSD: "Дин.",
+    RUB: "₽",
+    RWF: "R₣",
+    SAR: "﷼",
+    SBD: "$",
+    SCR: "₨",
+    SDG: "ج.س.",
+    SEK: "kr",
+    SGD: "$",
+    SHP: "£",
+    SLL: "Le",
+    SOS: "S",
+    SRD: "$",
+    SSP: "£",
+    STD: "Db",
+    SVC: "$",
+    SYP: "£",
+    SZL: "E",
+    THB: "฿",
+    TJS: "SM",
+    TMT: "T",
+    TND: "د.ت",
+    TOP: "T$",
+    TRL: "₤",
+    TRY: "₺",
+    TTD: "TT$",
+    TVD: "$",
+    TWD: "NT$",
+    TZS: "TSh",
+    UAH: "₴",
+    UGX: "USh",
+    USD: "$",
+    UYU: "$U",
+    UZS: "лв",
+    VEF: "Bs",
+    VND: "₫",
+    VUV: "VT",
+    WST: "WS$",
+    XAF: "FCFA",
+    XBT: "Ƀ",
+    XCD: "$",
+    XOF: "CFA",
+    XPF: "₣",
+    YER: "﷼",
+    ZAR: "R",
+    ZWD: "Z$",
+    BTC: "฿",
+};
+exports.default = currencySymbols;
+
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -706,11 +903,11 @@ module.exports = warning;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__root_js__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__root_js__ = __webpack_require__(46);
 
 
 /** Built-in value references. */
@@ -720,7 +917,7 @@ var Symbol = __WEBPACK_IMPORTED_MODULE_0__root_js__["a" /* default */].Symbol;
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {/**
@@ -747,17 +944,17 @@ if (process.env.NODE_ENV !== 'production') {
   // By explicitly using `prop-types` you are opting into new development behavior.
   // http://fb.me/prop-types-in-prod
   var throwOnDirectAccess = true;
-  module.exports = __webpack_require__(48)(isValidElement, throwOnDirectAccess);
+  module.exports = __webpack_require__(50)(isValidElement, throwOnDirectAccess);
 } else {
   // By explicitly using `prop-types` you are opting into new production behavior.
   // http://fb.me/prop-types-in-prod
-  module.exports = __webpack_require__(47)();
+  module.exports = __webpack_require__(49)();
 }
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -778,18 +975,18 @@ module.exports = ReactPropTypesSecret;
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_hoist_non_react_statics__ = __webpack_require__(36);
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_hoist_non_react_statics__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_hoist_non_react_statics___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_hoist_non_react_statics__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_invariant__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_invariant__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_invariant___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_invariant__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils_Subscription__ = __webpack_require__(56);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils_PropTypes__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils_Subscription__ = __webpack_require__(58);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils_PropTypes__ = __webpack_require__(18);
 /* harmony export (immutable) */ __webpack_exports__["a"] = connectAdvanced;
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -1066,11 +1263,11 @@ selectorFactory) {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_verifyPlainObject__ = __webpack_require__(17);
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_verifyPlainObject__ = __webpack_require__(19);
 /* harmony export (immutable) */ __webpack_exports__["b"] = wrapMapToPropsConstant;
 /* unused harmony export getDependsOnOwnProps */
 /* harmony export (immutable) */ __webpack_exports__["a"] = wrapMapToPropsFunc;
@@ -1144,11 +1341,11 @@ function wrapMapToPropsFunc(mapToProps, methodName) {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_prop_types__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_prop_types__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_prop_types__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return subscriptionShape; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return storeShape; });
@@ -1168,7 +1365,7 @@ var storeShape = __WEBPACK_IMPORTED_MODULE_0_prop_types___default.a.shape({
 });
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1185,7 +1382,7 @@ function verifyPlainObject(value, displayName, methodName) {
 }
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1210,7 +1407,7 @@ var formatTime = exports.formatTime = function formatTime(time) {
 var timer = exports.timer = typeof performance !== "undefined" && performance !== null && typeof performance.now === "function" ? performance : Date;
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1251,12 +1448,12 @@ function compose() {
 }
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash_es_isPlainObject__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_symbol_observable__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_symbol_observable__ = __webpack_require__(66);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_symbol_observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_symbol_observable__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return ActionTypes; });
 /* harmony export (immutable) */ __webpack_exports__["a"] = createStore;
@@ -1510,7 +1707,7 @@ function createStore(reducer, preloadedState, enhancer) {
 }
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1538,7 +1735,7 @@ function warning(message) {
 }
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1555,10 +1752,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(1);
-var LoginForm_1 = __webpack_require__(31);
-var List_1 = __webpack_require__(30);
-var Calculator_1 = __webpack_require__(29);
-var Transaction_1 = __webpack_require__(32);
+var LoginForm_1 = __webpack_require__(33);
+var List_1 = __webpack_require__(32);
+var Calculator_1 = __webpack_require__(31);
 var react_redux_1 = __webpack_require__(2);
 function mapStateToProps(state) {
     var isLogged = state.login.isLogged;
@@ -1576,7 +1772,6 @@ var App = (function (_super) {
         if (true)
             return (React.createElement("div", null,
                 React.createElement(List_1.default, null),
-                React.createElement(Transaction_1.default, null),
                 React.createElement(Calculator_1.default, null)));
         else
             return (React.createElement(LoginForm_1.default, null));
@@ -1587,7 +1782,7 @@ exports.default = react_redux_1.connect(mapStateToProps)(App);
 
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1628,7 +1823,7 @@ exports.default = login;
 
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1649,7 +1844,8 @@ var purchase = function (state, action) {
         items: [],
         transactions: [],
         calculatorData: { fromCurrency: 'USD', toCurrency: 'USD' },
-        value: 0
+        value: 0,
+        listCurrency: 'USD'
     }; }
     if (action === void 0) { action = { type: '' }; }
     switch (action.type) {
@@ -1665,6 +1861,10 @@ var purchase = function (state, action) {
             return __assign({}, state, { value: action.newValue });
         case 'FETCH_TRANSACTIONS_FULFILLED':
             return __assign({}, state, { transactions: action.payload });
+        case 'POST_TRANSACTION_FULFILLED':
+            return __assign({}, state, { transactions: action.payload });
+        case 'CHANGE_LIST_CURRENCY':
+            return __assign({}, state, { listCurrency: action.newValue });
         default: return state;
     }
 };
@@ -1672,7 +1872,7 @@ exports.default = purchase;
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1713,7 +1913,7 @@ exports.default = transaction;
 
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1726,11 +1926,11 @@ exports.logger = exports.createLogger = exports.defaults = undefined;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _core = __webpack_require__(58);
+var _core = __webpack_require__(60);
 
-var _helpers = __webpack_require__(18);
+var _helpers = __webpack_require__(20);
 
-var _defaults = __webpack_require__(59);
+var _defaults = __webpack_require__(61);
 
 var _defaults2 = _interopRequireDefault(_defaults);
 
@@ -1858,7 +2058,7 @@ exports.logger = defaultLogger;
 exports.default = defaultLogger;
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1887,13 +2087,13 @@ thunk.withExtraArgument = createThunkMiddleware;
 exports['default'] = thunk;
 
 /***/ }),
-/* 28 */
+/* 30 */
 /***/ (function(module, exports) {
 
 module.exports = ReactDOM;
 
 /***/ }),
-/* 29 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1920,7 +2120,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(1);
 var react_redux_1 = __webpack_require__(2);
 var actions_1 = __webpack_require__(3);
-var symbols_1 = __webpack_require__(34);
+var symbols_1 = __webpack_require__(11);
+var round_1 = __webpack_require__(10);
 function mapStateToProps(state) {
     var _a = state.purchase, items = _a.items, calculatorData = _a.calculatorData, value = _a.value;
     return { items: items, data: calculatorData, value: value };
@@ -1960,22 +2161,25 @@ var Calculator = (function (_super) {
     Calculator.prototype.render = function () {
         var rate = this.props.items[this.props.data.toCurrency] / this.props.items[this.props.data.fromCurrency];
         var tatgetCurrency = this.props.data.toCurrency;
-        return (React.createElement("form", { className: "form-inline" },
-            React.createElement("select", { className: 'm-2 form-control', value: this.props.data.fromCurrency, onChange: this._changeFromCurrency.bind(this) }, Object.keys(this.props.items).map(function (currency, idx) {
+        return (React.createElement("form", { className: "form-inline m-2" },
+            React.createElement("label", { htmlFor: "currency-convert" }, "Convert "),
+            React.createElement("input", { id: "currency-convert", type: "text", value: this.props.value, onChange: this._onValueChange.bind(this), onBlur: this._onValueChange.bind(this), className: 'm-2 form-control' }),
+            React.createElement("label", { htmlFor: "from-currency" }, " from "),
+            React.createElement("select", { id: "from-currency", className: 'm-2 form-control', value: this.props.data.fromCurrency, onChange: this._changeFromCurrency.bind(this) }, Object.keys(this.props.items).map(function (currency, idx) {
                 return (React.createElement("option", { key: idx, value: currency }, currency));
             })),
-            React.createElement("input", { type: "text", value: this.props.value, onChange: this._onValueChange.bind(this), onBlur: this._onValueChange.bind(this), className: 'm-2 form-control' }),
-            React.createElement("select", { className: 'm-2 form-control', value: this.props.data.toCurrency, onChange: this._changeToCurrency.bind(this) }, Object.keys(this.props.items).map(function (currency, idx) {
+            React.createElement("label", { htmlFor: "to-currency" }, " to "),
+            React.createElement("select", { id: "to-currency", className: 'm-2 form-control', value: this.props.data.toCurrency, onChange: this._changeToCurrency.bind(this) }, Object.keys(this.props.items).map(function (currency, idx) {
                 return (React.createElement("option", { key: idx, value: currency }, currency));
             })),
             tatgetCurrency,
             " ",
             symbols_1.default[tatgetCurrency],
             " ",
-            this.props.value * rate,
+            round_1.default(this.props.value * rate),
             React.createElement("br", null),
             "Rate:",
-            rate));
+            round_1.default(rate)));
     };
     return Calculator;
 }(React.Component));
@@ -1983,7 +2187,7 @@ exports.default = react_redux_1.connect(mapStateToProps)(Calculator);
 
 
 /***/ }),
-/* 30 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2002,11 +2206,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(1);
 var react_redux_1 = __webpack_require__(2);
 var actions_1 = __webpack_require__(3);
-var dateFormat = __webpack_require__(69);
+var dateFormat = __webpack_require__(36);
+var symbols_1 = __webpack_require__(11);
+var round_1 = __webpack_require__(10);
+var Transaction_1 = __webpack_require__(34);
 function mapStateToProps(state) {
-    var _a = state.purchase, isFetching = _a.isFetching, didInvalidate = _a.didInvalidate, transactions = _a.transactions;
+    var _a = state.purchase, isFetching = _a.isFetching, didInvalidate = _a.didInvalidate, transactions = _a.transactions, items = _a.items, listCurrency = _a.listCurrency;
     return {
-        isFetching: isFetching, didInvalidate: didInvalidate, transactions: transactions
+        isFetching: isFetching, didInvalidate: didInvalidate, transactions: transactions, items: items, listCurrency: listCurrency
     };
 }
 var List = (function (_super) {
@@ -2014,29 +2221,46 @@ var List = (function (_super) {
     function List() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    List.prototype._onListCurrencyChange = function (evt) {
+        var value = evt.target.value;
+        this.props.dispatch(actions_1.changeListCurrency(value));
+    };
     List.prototype.componentWillMount = function () {
         this.props.dispatch(actions_1.fetchTransactions());
     };
     List.prototype.render = function () {
+        var _a = this.props, listCurrency = _a.listCurrency, items = _a.items;
         return (React.createElement("div", null,
             React.createElement("h1", { className: "display-5 m-2" }, "Transaction History"),
             React.createElement("table", { className: "table-inverse m-2" },
                 React.createElement("thead", null,
-                    React.createElement("tr", { className: "p-2" },
+                    React.createElement("tr", { style: { color: '#009688' }, className: "p-2" },
                         React.createElement("th", { className: "p-2" }, "Date"),
                         React.createElement("th", { className: "p-2" }, "Transaction"),
-                        React.createElement("th", { className: "p-2" }, "Ammount"))),
-                React.createElement("tbody", null, this.props.transactions.map(function (trans, index) {
-                    var date = trans.date, transaction = trans.transaction, concept = trans.concept, amount = trans.amount;
-                    console.log(date, transaction, concept, amount);
-                    return (React.createElement("tr", { key: index },
-                        React.createElement("td", { className: "p-2" }, dateFormat(date, 'dd/mm/yyyy')),
-                        React.createElement("td", { className: "p-2" },
-                            transaction,
-                            "/",
-                            concept),
-                        React.createElement("td", { className: "p-2" }, amount)));
-                })))));
+                        React.createElement("th", { className: "p-2" },
+                            "Amount",
+                            React.createElement("select", { className: "form-control-sm m-2", value: listCurrency, onChange: this._onListCurrencyChange.bind(this) }, Object.keys(this.props.items).map(function (currency, idx) {
+                                return (React.createElement("option", { key: idx, value: currency }, currency));
+                            }))))),
+                React.createElement("tbody", null,
+                    this.props.transactions.map(function (trans, index) {
+                        var date = trans.date, transaction = trans.transaction, concept = trans.concept, amount = trans.amount;
+                        return (React.createElement("tr", { key: index },
+                            React.createElement("td", { className: "p-2" }, dateFormat(date, 'dd/mm/yyyy')),
+                            React.createElement("td", { className: "p-2" },
+                                transaction,
+                                "/",
+                                concept),
+                            React.createElement("td", { className: "p-2" },
+                                round_1.default(amount * items[listCurrency]),
+                                " ",
+                                symbols_1.default[listCurrency],
+                                " ",
+                                listCurrency)));
+                    }),
+                    React.createElement("tr", null,
+                        React.createElement("td", { colSpan: 3 },
+                            React.createElement(Transaction_1.default, null)))))));
     };
     return List;
 }(React.Component));
@@ -2044,7 +2268,7 @@ exports.default = react_redux_1.connect(mapStateToProps)(List);
 
 
 /***/ }),
-/* 31 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2108,7 +2332,7 @@ var LoginForm = (function (_super) {
         return (React.createElement("form", { className: "form d-flex flex-column h-100 align-items-center justify-content-center", autoComplete: "off", onSubmit: this._onSubmit.bind(this) },
             React.createElement("div", { className: "d-flex flex-row" },
                 React.createElement("label", { className: "m-2", htmlFor: "username" }, "Username"),
-                React.createElement("input", { className: "form-control m-2", type: "text", id: "username", value: this.props.data.username, placeholder: "frank.underwood", autoComplete: "off", autoCorrect: "off", autoCapitalize: "off", spellCheck: false, onChange: this._changeUsername.bind(this) })),
+                React.createElement("input", { className: "form-control m-2", type: "text", id: "username", value: this.props.data.username, placeholder: "username", autoComplete: "off", autoCorrect: "off", autoCapitalize: "off", spellCheck: false, onChange: this._changeUsername.bind(this) })),
             React.createElement("div", { className: "d-flex flex-row" },
                 React.createElement("label", { className: "m-2", htmlFor: "password" }, "Password"),
                 React.createElement("input", { className: "form-control m-2", id: "password", type: "password", value: this.props.data.password, autoComplete: "off", placeholder: "••••••••••", onChange: this._changePassword.bind(this) })),
@@ -2121,7 +2345,7 @@ exports.default = react_redux_1.connect(mapStateToProps)(LoginForm);
 
 
 /***/ }),
-/* 32 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2150,8 +2374,9 @@ var react_redux_1 = __webpack_require__(2);
 var actions_1 = __webpack_require__(3);
 function mapStateToProps(state) {
     var _a = state.transaction, isFetching = _a.isFetching, didInvalidate = _a.didInvalidate, transactionData = _a.transactionData;
+    var _b = state.purchase, listCurrency = _b.listCurrency, items = _b.items;
     return {
-        isFetching: isFetching, didInvalidate: didInvalidate, data: transactionData
+        isFetching: isFetching, didInvalidate: didInvalidate, data: transactionData, listCurrency: listCurrency, items: items
     };
 }
 var Transaction = (function (_super) {
@@ -2161,7 +2386,7 @@ var Transaction = (function (_super) {
     }
     Transaction.prototype._onSubmit = function (evt) {
         evt.preventDefault();
-        this.props.dispatch(actions_1.postTransaction(this.props.data));
+        this.props.dispatch(actions_1.postTransaction(this.props.data, this.props.items[this.props.listCurrency]));
     };
     Transaction.prototype._changeAmmount = function (evt) {
         var value = evt.target.value;
@@ -2203,8 +2428,10 @@ var Transaction = (function (_super) {
                 React.createElement("option", { value: "Home Depot" }, "Home Depot"),
                 React.createElement("option", { value: "Jamba Juice" }, "Jamba Juice"),
                 React.createElement("option", { value: "Wells Fargo" }, "Wells Fargo")),
-            React.createElement("input", { className: "form-control m-2", type: "text", onChange: this._changeAmmount.bind(this), onBlur: this._changeAmmount.bind(this), value: this.props.data.amount }),
-            React.createElement("input", { className: "form-control btn btn-primary m-2", type: "submit" })));
+            React.createElement("div", { className: "input-group mb-2 mr-sm-2 mb-sm-0" },
+                React.createElement("div", { className: "input-group-addon" }, this.props.listCurrency),
+                React.createElement("input", { className: "form-control", type: "text", onChange: this._changeAmmount.bind(this), onBlur: this._changeAmmount.bind(this), value: this.props.data.amount })),
+            React.createElement("input", { className: "form-control btn btn-success m-2", type: "submit" })));
     };
     return Transaction;
 }(React.Component));
@@ -2212,22 +2439,22 @@ exports.default = react_redux_1.connect(mapStateToProps)(Transaction);
 
 
 /***/ }),
-/* 33 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(1);
-var react_dom_1 = __webpack_require__(28);
+var react_dom_1 = __webpack_require__(30);
 var redux_1 = __webpack_require__(9);
 var react_redux_1 = __webpack_require__(2);
-var redux_logger_1 = __webpack_require__(26);
-var redux_thunk_1 = __webpack_require__(27);
-var App_1 = __webpack_require__(22);
-var purchase_1 = __webpack_require__(24);
-var login_1 = __webpack_require__(23);
-var transaction_1 = __webpack_require__(25);
+var redux_logger_1 = __webpack_require__(28);
+var redux_thunk_1 = __webpack_require__(29);
+var App_1 = __webpack_require__(24);
+var purchase_1 = __webpack_require__(26);
+var login_1 = __webpack_require__(25);
+var transaction_1 = __webpack_require__(27);
 var midleware = redux_1.applyMiddleware(redux_thunk_1.default, redux_logger_1.createLogger());
 var reducer = redux_1.combineReducers({
     purchase: purchase_1.default,
@@ -2240,181 +2467,240 @@ react_dom_1.render(React.createElement(react_redux_1.Provider, { store: store },
 
 
 /***/ }),
-/* 34 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+var __WEBPACK_AMD_DEFINE_RESULT__;/*
+ * Date Format 1.2.3
+ * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
+ * MIT license
+ *
+ * Includes enhancements by Scott Trenda <scott.trenda.net>
+ * and Kris Kowal <cixar.com/~kris.kowal/>
+ *
+ * Accepts a date, a mask, or a date and a mask.
+ * Returns a formatted version of the given date.
+ * The date defaults to the current date/time.
+ * The mask defaults to dateFormat.masks.default.
+ */
 
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = {
-    AED: "د.إ",
-    AFN: "؋",
-    ALL: "L",
-    ANG: "ƒ",
-    AOA: "Kz",
-    ARS: "$",
-    AUD: "$",
-    AWG: "ƒ",
-    AZN: "₼",
-    BAM: "KM",
-    BBD: "$",
-    BDT: "৳",
-    BGN: "лв",
-    BHD: ".د.ب",
-    BIF: "FBu",
-    BMD: "$",
-    BND: "$",
-    BOB: "Bs.",
-    BRL: "R$",
-    BSD: "$",
-    BTN: "Nu.",
-    BWP: "P",
-    BYR: "p.",
-    BZD: "BZ$",
-    CAD: "$",
-    CDF: "FC",
-    CHF: "Fr.",
-    CLP: "$",
-    CNY: "¥",
-    COP: "$",
-    CRC: "₡",
-    CUC: "$",
-    CUP: "₱",
-    CVE: "$",
-    CZK: "Kč",
-    DJF: "Fdj",
-    DKK: "kr",
-    DOP: "RD$",
-    DZD: "دج",
-    EEK: "kr",
-    EGP: "£",
-    ERN: "Nfk",
-    ETB: "Br",
-    EUR: "€",
-    FJD: "$",
-    FKP: "£",
-    GBP: "£",
-    GEL: "₾",
-    GGP: "£",
-    GHC: "₵",
-    GHS: "GH₵",
-    GIP: "£",
-    GMD: "D",
-    GNF: "FG",
-    GTQ: "Q",
-    GYD: "$",
-    HKD: "$",
-    HNL: "L",
-    HRK: "kn",
-    HTG: "G",
-    HUF: "Ft",
-    IDR: "Rp",
-    ILS: "₪",
-    IMP: "£",
-    INR: "₹",
-    IQD: "ع.د",
-    IRR: "﷼",
-    ISK: "kr",
-    JEP: "£",
-    JMD: "J$",
-    JPY: "¥",
-    KES: "KSh",
-    KGS: "лв",
-    KHR: "៛",
-    KMF: "CF",
-    KPW: "₩",
-    KRW: "₩",
-    KYD: "$",
-    KZT: "₸",
-    LAK: "₭",
-    LBP: "£",
-    LKR: "₨",
-    LRD: "$",
-    LSL: "M",
-    LTL: "Lt",
-    LVL: "Ls",
-    MAD: "MAD",
-    MDL: "lei",
-    MGA: "Ar",
-    MKD: "ден",
-    MMK: "K",
-    MNT: "₮",
-    MOP: "MOP$",
-    MUR: "₨",
-    MVR: "Rf",
-    MWK: "MK",
-    MXN: "$",
-    MYR: "RM",
-    MZN: "MT",
-    NAD: "$",
-    NGN: "₦",
-    NIO: "C$",
-    NOK: "kr",
-    NPR: "₨",
-    NZD: "$",
-    OMR: "﷼",
-    PAB: "B/.",
-    PEN: "S/.",
-    PGK: "K",
-    PHP: "₱",
-    PKR: "₨",
-    PLN: "zł",
-    PYG: "Gs",
-    QAR: "﷼",
-    RMB: "￥",
-    RON: "lei",
-    RSD: "Дин.",
-    RUB: "₽",
-    RWF: "R₣",
-    SAR: "﷼",
-    SBD: "$",
-    SCR: "₨",
-    SDG: "ج.س.",
-    SEK: "kr",
-    SGD: "$",
-    SHP: "£",
-    SLL: "Le",
-    SOS: "S",
-    SRD: "$",
-    SSP: "£",
-    STD: "Db",
-    SVC: "$",
-    SYP: "£",
-    SZL: "E",
-    THB: "฿",
-    TJS: "SM",
-    TMT: "T",
-    TND: "د.ت",
-    TOP: "T$",
-    TRL: "₤",
-    TRY: "₺",
-    TTD: "TT$",
-    TVD: "$",
-    TWD: "NT$",
-    TZS: "TSh",
-    UAH: "₴",
-    UGX: "USh",
-    USD: "$",
-    UYU: "$U",
-    UZS: "лв",
-    VEF: "Bs",
-    VND: "₫",
-    VUV: "VT",
-    WST: "WS$",
-    XAF: "FCFA",
-    XBT: "Ƀ",
-    XCD: "$",
-    XOF: "CFA",
-    XPF: "₣",
-    YER: "﷼",
-    ZAR: "R",
-    ZWD: "Z$",
-    BTC: "฿",
+(function(global) {
+  'use strict';
+
+  var dateFormat = (function() {
+      var token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZWN]|'[^']*'|'[^']*'/g;
+      var timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g;
+      var timezoneClip = /[^-+\dA-Z]/g;
+  
+      // Regexes and supporting functions are cached through closure
+      return function (date, mask, utc, gmt) {
+  
+        // You can't provide utc if you skip other args (use the 'UTC:' mask prefix)
+        if (arguments.length === 1 && kindOf(date) === 'string' && !/\d/.test(date)) {
+          mask = date;
+          date = undefined;
+        }
+  
+        date = date || new Date;
+  
+        if(!(date instanceof Date)) {
+          date = new Date(date);
+        }
+  
+        if (isNaN(date)) {
+          throw TypeError('Invalid date');
+        }
+  
+        mask = String(dateFormat.masks[mask] || mask || dateFormat.masks['default']);
+  
+        // Allow setting the utc/gmt argument via the mask
+        var maskSlice = mask.slice(0, 4);
+        if (maskSlice === 'UTC:' || maskSlice === 'GMT:') {
+          mask = mask.slice(4);
+          utc = true;
+          if (maskSlice === 'GMT:') {
+            gmt = true;
+          }
+        }
+  
+        var _ = utc ? 'getUTC' : 'get';
+        var d = date[_ + 'Date']();
+        var D = date[_ + 'Day']();
+        var m = date[_ + 'Month']();
+        var y = date[_ + 'FullYear']();
+        var H = date[_ + 'Hours']();
+        var M = date[_ + 'Minutes']();
+        var s = date[_ + 'Seconds']();
+        var L = date[_ + 'Milliseconds']();
+        var o = utc ? 0 : date.getTimezoneOffset();
+        var W = getWeek(date);
+        var N = getDayOfWeek(date);
+        var flags = {
+          d:    d,
+          dd:   pad(d),
+          ddd:  dateFormat.i18n.dayNames[D],
+          dddd: dateFormat.i18n.dayNames[D + 7],
+          m:    m + 1,
+          mm:   pad(m + 1),
+          mmm:  dateFormat.i18n.monthNames[m],
+          mmmm: dateFormat.i18n.monthNames[m + 12],
+          yy:   String(y).slice(2),
+          yyyy: y,
+          h:    H % 12 || 12,
+          hh:   pad(H % 12 || 12),
+          H:    H,
+          HH:   pad(H),
+          M:    M,
+          MM:   pad(M),
+          s:    s,
+          ss:   pad(s),
+          l:    pad(L, 3),
+          L:    pad(Math.round(L / 10)),
+          t:    H < 12 ? 'a'  : 'p',
+          tt:   H < 12 ? 'am' : 'pm',
+          T:    H < 12 ? 'A'  : 'P',
+          TT:   H < 12 ? 'AM' : 'PM',
+          Z:    gmt ? 'GMT' : utc ? 'UTC' : (String(date).match(timezone) || ['']).pop().replace(timezoneClip, ''),
+          o:    (o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
+          S:    ['th', 'st', 'nd', 'rd'][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10],
+          W:    W,
+          N:    N
+        };
+  
+        return mask.replace(token, function (match) {
+          if (match in flags) {
+            return flags[match];
+          }
+          return match.slice(1, match.length - 1);
+        });
+      };
+    })();
+
+  dateFormat.masks = {
+    'default':               'ddd mmm dd yyyy HH:MM:ss',
+    'shortDate':             'm/d/yy',
+    'mediumDate':            'mmm d, yyyy',
+    'longDate':              'mmmm d, yyyy',
+    'fullDate':              'dddd, mmmm d, yyyy',
+    'shortTime':             'h:MM TT',
+    'mediumTime':            'h:MM:ss TT',
+    'longTime':              'h:MM:ss TT Z',
+    'isoDate':               'yyyy-mm-dd',
+    'isoTime':               'HH:MM:ss',
+    'isoDateTime':           'yyyy-mm-dd\'T\'HH:MM:sso',
+    'isoUtcDateTime':        'UTC:yyyy-mm-dd\'T\'HH:MM:ss\'Z\'',
+    'expiresHeaderFormat':   'ddd, dd mmm yyyy HH:MM:ss Z'
+  };
+
+  // Internationalization strings
+  dateFormat.i18n = {
+    dayNames: [
+      'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
+      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+    ],
+    monthNames: [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+  };
+
+function pad(val, len) {
+  val = String(val);
+  len = len || 2;
+  while (val.length < len) {
+    val = '0' + val;
+  }
+  return val;
+}
+
+/**
+ * Get the ISO 8601 week number
+ * Based on comments from
+ * http://techblog.procurios.nl/k/n618/news/view/33796/14863/Calculate-ISO-8601-week-and-year-in-javascript.html
+ *
+ * @param  {Object} `date`
+ * @return {Number}
+ */
+function getWeek(date) {
+  // Remove time components of date
+  var targetThursday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  // Change date to Thursday same week
+  targetThursday.setDate(targetThursday.getDate() - ((targetThursday.getDay() + 6) % 7) + 3);
+
+  // Take January 4th as it is always in week 1 (see ISO 8601)
+  var firstThursday = new Date(targetThursday.getFullYear(), 0, 4);
+
+  // Change date to Thursday same week
+  firstThursday.setDate(firstThursday.getDate() - ((firstThursday.getDay() + 6) % 7) + 3);
+
+  // Check if daylight-saving-time-switch occured and correct for it
+  var ds = targetThursday.getTimezoneOffset() - firstThursday.getTimezoneOffset();
+  targetThursday.setHours(targetThursday.getHours() - ds);
+
+  // Number of weeks between target Thursday and first Thursday
+  var weekDiff = (targetThursday - firstThursday) / (86400000*7);
+  return 1 + Math.floor(weekDiff);
+}
+
+/**
+ * Get ISO-8601 numeric representation of the day of the week
+ * 1 (for Monday) through 7 (for Sunday)
+ * 
+ * @param  {Object} `date`
+ * @return {Number}
+ */
+function getDayOfWeek(date) {
+  var dow = date.getDay();
+  if(dow === 0) {
+    dow = 7;
+  }
+  return dow;
+}
+
+/**
+ * kind-of shortcut
+ * @param  {*} val
+ * @return {String}
+ */
+function kindOf(val) {
+  if (val === null) {
+    return 'null';
+  }
+
+  if (val === undefined) {
+    return 'undefined';
+  }
+
+  if (typeof val !== 'object') {
+    return typeof val;
+  }
+
+  if (Array.isArray(val)) {
+    return 'array';
+  }
+
+  return {}.toString.call(val)
+    .slice(8, -1).toLowerCase();
 };
 
 
+
+  if (true) {
+    !(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
+      return dateFormat;
+    }.call(exports, __webpack_require__, exports, module),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+  } else if (typeof exports === 'object') {
+    module.exports = dateFormat;
+  } else {
+    global.dateFormat = dateFormat;
+  }
+})(this);
+
+
 /***/ }),
-/* 35 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -2844,7 +3130,7 @@ exports.default = {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
-/* 36 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2901,7 +3187,7 @@ module.exports = function hoistNonReactStatics(targetComponent, sourceComponent,
 
 
 /***/ }),
-/* 37 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2960,13 +3246,13 @@ module.exports = invariant;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 38 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Symbol_js__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__getRawTag_js__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__objectToString_js__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Symbol_js__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__getRawTag_js__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__objectToString_js__ = __webpack_require__(44);
 
 
 
@@ -2998,7 +3284,7 @@ function baseGetTag(value) {
 
 
 /***/ }),
-/* 39 */
+/* 41 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3010,11 +3296,11 @@ var freeGlobal = typeof global == 'object' && global && global.Object === Object
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(8)))
 
 /***/ }),
-/* 40 */
+/* 42 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__overArg_js__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__overArg_js__ = __webpack_require__(45);
 
 
 /** Built-in value references. */
@@ -3024,11 +3310,11 @@ var getPrototype = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__overArg_js
 
 
 /***/ }),
-/* 41 */
+/* 43 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Symbol_js__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Symbol_js__ = __webpack_require__(13);
 
 
 /** Used for built-in method references. */
@@ -3078,7 +3364,7 @@ function getRawTag(value) {
 
 
 /***/ }),
-/* 42 */
+/* 44 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3107,7 +3393,7 @@ function objectToString(value) {
 
 
 /***/ }),
-/* 43 */
+/* 45 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3129,11 +3415,11 @@ function overArg(func, transform) {
 
 
 /***/ }),
-/* 44 */
+/* 46 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__freeGlobal_js__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__freeGlobal_js__ = __webpack_require__(41);
 
 
 /** Detect free variable `self`. */
@@ -3146,7 +3432,7 @@ var root = __WEBPACK_IMPORTED_MODULE_0__freeGlobal_js__["a" /* default */] || fr
 
 
 /***/ }),
-/* 45 */
+/* 47 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3182,7 +3468,7 @@ function isObjectLike(value) {
 
 
 /***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3199,8 +3485,8 @@ function isObjectLike(value) {
 
 if (process.env.NODE_ENV !== 'production') {
   var invariant = __webpack_require__(5);
-  var warning = __webpack_require__(10);
-  var ReactPropTypesSecret = __webpack_require__(13);
+  var warning = __webpack_require__(12);
+  var ReactPropTypesSecret = __webpack_require__(15);
   var loggedTypeFailures = {};
 }
 
@@ -3251,7 +3537,7 @@ module.exports = checkPropTypes;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 47 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3312,7 +3598,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 48 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3329,10 +3615,10 @@ module.exports = function() {
 
 var emptyFunction = __webpack_require__(4);
 var invariant = __webpack_require__(5);
-var warning = __webpack_require__(10);
+var warning = __webpack_require__(12);
 
-var ReactPropTypesSecret = __webpack_require__(13);
-var checkPropTypes = __webpack_require__(46);
+var ReactPropTypesSecret = __webpack_require__(15);
+var checkPropTypes = __webpack_require__(48);
 
 module.exports = function(isValidElement, throwOnDirectAccess) {
   /* global Symbol */
@@ -3798,15 +4084,15 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 49 */
+/* 51 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_PropTypes__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_PropTypes__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils_warning__ = __webpack_require__(7);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Provider; });
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3880,16 +4166,16 @@ Provider.displayName = 'Provider';
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_connectAdvanced__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_shallowEqual__ = __webpack_require__(57);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mapDispatchToProps__ = __webpack_require__(51);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mapStateToProps__ = __webpack_require__(52);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mergeProps__ = __webpack_require__(53);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__selectorFactory__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_connectAdvanced__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_shallowEqual__ = __webpack_require__(59);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mapDispatchToProps__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mapStateToProps__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mergeProps__ = __webpack_require__(55);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__selectorFactory__ = __webpack_require__(56);
 /* unused harmony export createConnect */
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -3996,12 +4282,12 @@ function createConnect() {
 /* harmony default export */ __webpack_exports__["a"] = (createConnect());
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_redux__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__wrapMapToProps__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__wrapMapToProps__ = __webpack_require__(17);
 /* unused harmony export whenMapDispatchToPropsIsFunction */
 /* unused harmony export whenMapDispatchToPropsIsMissing */
 /* unused harmony export whenMapDispatchToPropsIsObject */
@@ -4027,11 +4313,11 @@ function whenMapDispatchToPropsIsObject(mapDispatchToProps) {
 /* harmony default export */ __webpack_exports__["a"] = ([whenMapDispatchToPropsIsFunction, whenMapDispatchToPropsIsMissing, whenMapDispatchToPropsIsObject]);
 
 /***/ }),
-/* 52 */
+/* 54 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__wrapMapToProps__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__wrapMapToProps__ = __webpack_require__(17);
 /* unused harmony export whenMapStateToPropsIsFunction */
 /* unused harmony export whenMapStateToPropsIsMissing */
 
@@ -4049,11 +4335,11 @@ function whenMapStateToPropsIsMissing(mapStateToProps) {
 /* harmony default export */ __webpack_exports__["a"] = ([whenMapStateToPropsIsFunction, whenMapStateToPropsIsMissing]);
 
 /***/ }),
-/* 53 */
+/* 55 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_verifyPlainObject__ = __webpack_require__(17);
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_verifyPlainObject__ = __webpack_require__(19);
 /* unused harmony export defaultMergeProps */
 /* unused harmony export wrapMergePropsFunc */
 /* unused harmony export whenMergePropsIsFunction */
@@ -4106,11 +4392,11 @@ function whenMergePropsIsOmitted(mergeProps) {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
 
 /***/ }),
-/* 54 */
+/* 56 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__verifySubselectors__ = __webpack_require__(55);
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__verifySubselectors__ = __webpack_require__(57);
 /* unused harmony export impureFinalPropsSelectorFactory */
 /* unused harmony export pureFinalPropsSelectorFactory */
 /* harmony export (immutable) */ __webpack_exports__["a"] = finalPropsSelectorFactory;
@@ -4219,7 +4505,7 @@ function finalPropsSelectorFactory(dispatch, _ref2) {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
 
 /***/ }),
-/* 55 */
+/* 57 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4244,7 +4530,7 @@ function verifySubselectors(mapStateToProps, mapDispatchToProps, mergeProps, dis
 }
 
 /***/ }),
-/* 56 */
+/* 58 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4340,7 +4626,7 @@ var Subscription = function () {
 
 
 /***/ }),
-/* 57 */
+/* 59 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4377,7 +4663,7 @@ function shallowEqual(objA, objB) {
 }
 
 /***/ }),
-/* 58 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4391,9 +4677,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 exports.printBuffer = printBuffer;
 
-var _helpers = __webpack_require__(18);
+var _helpers = __webpack_require__(20);
 
-var _diff = __webpack_require__(60);
+var _diff = __webpack_require__(62);
 
 var _diff2 = _interopRequireDefault(_diff);
 
@@ -4526,7 +4812,7 @@ function printBuffer(buffer, options) {
 }
 
 /***/ }),
-/* 59 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4578,7 +4864,7 @@ exports.default = {
 module.exports = exports["default"];
 
 /***/ }),
-/* 60 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4589,7 +4875,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = diffLogger;
 
-var _deepDiff = __webpack_require__(35);
+var _deepDiff = __webpack_require__(37);
 
 var _deepDiff2 = _interopRequireDefault(_deepDiff);
 
@@ -4678,11 +4964,11 @@ function diffLogger(prevState, newState, logger, isCollapsed) {
 module.exports = exports['default'];
 
 /***/ }),
-/* 61 */
+/* 63 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compose__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compose__ = __webpack_require__(21);
 /* harmony export (immutable) */ __webpack_exports__["a"] = applyMiddleware;
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -4734,7 +5020,7 @@ function applyMiddleware() {
 }
 
 /***/ }),
-/* 62 */
+/* 64 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4788,13 +5074,13 @@ function bindActionCreators(actionCreators, dispatch) {
 }
 
 /***/ }),
-/* 63 */
+/* 65 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__createStore__ = __webpack_require__(20);
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__createStore__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash_es_isPlainObject__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_warning__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_warning__ = __webpack_require__(23);
 /* harmony export (immutable) */ __webpack_exports__["a"] = combineReducers;
 
 
@@ -4928,14 +5214,14 @@ function combineReducers(reducers) {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
 
 /***/ }),
-/* 64 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(65);
+module.exports = __webpack_require__(67);
 
 
 /***/ }),
-/* 65 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4945,7 +5231,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _ponyfill = __webpack_require__(66);
+var _ponyfill = __webpack_require__(68);
 
 var _ponyfill2 = _interopRequireDefault(_ponyfill);
 
@@ -4968,10 +5254,10 @@ if (typeof self !== 'undefined') {
 
 var result = (0, _ponyfill2['default'])(root);
 exports['default'] = result;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(68)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(70)(module)))
 
 /***/ }),
-/* 66 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5000,7 +5286,7 @@ function symbolObservablePonyfill(root) {
 };
 
 /***/ }),
-/* 67 */
+/* 69 */
 /***/ (function(module, exports) {
 
 (function(self) {
@@ -5467,7 +5753,7 @@ function symbolObservablePonyfill(root) {
 
 
 /***/ }),
-/* 68 */
+/* 70 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -5492,239 +5778,6 @@ module.exports = function(module) {
 	}
 	return module;
 };
-
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_RESULT__;/*
- * Date Format 1.2.3
- * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
- * MIT license
- *
- * Includes enhancements by Scott Trenda <scott.trenda.net>
- * and Kris Kowal <cixar.com/~kris.kowal/>
- *
- * Accepts a date, a mask, or a date and a mask.
- * Returns a formatted version of the given date.
- * The date defaults to the current date/time.
- * The mask defaults to dateFormat.masks.default.
- */
-
-(function(global) {
-  'use strict';
-
-  var dateFormat = (function() {
-      var token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZWN]|'[^']*'|'[^']*'/g;
-      var timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g;
-      var timezoneClip = /[^-+\dA-Z]/g;
-  
-      // Regexes and supporting functions are cached through closure
-      return function (date, mask, utc, gmt) {
-  
-        // You can't provide utc if you skip other args (use the 'UTC:' mask prefix)
-        if (arguments.length === 1 && kindOf(date) === 'string' && !/\d/.test(date)) {
-          mask = date;
-          date = undefined;
-        }
-  
-        date = date || new Date;
-  
-        if(!(date instanceof Date)) {
-          date = new Date(date);
-        }
-  
-        if (isNaN(date)) {
-          throw TypeError('Invalid date');
-        }
-  
-        mask = String(dateFormat.masks[mask] || mask || dateFormat.masks['default']);
-  
-        // Allow setting the utc/gmt argument via the mask
-        var maskSlice = mask.slice(0, 4);
-        if (maskSlice === 'UTC:' || maskSlice === 'GMT:') {
-          mask = mask.slice(4);
-          utc = true;
-          if (maskSlice === 'GMT:') {
-            gmt = true;
-          }
-        }
-  
-        var _ = utc ? 'getUTC' : 'get';
-        var d = date[_ + 'Date']();
-        var D = date[_ + 'Day']();
-        var m = date[_ + 'Month']();
-        var y = date[_ + 'FullYear']();
-        var H = date[_ + 'Hours']();
-        var M = date[_ + 'Minutes']();
-        var s = date[_ + 'Seconds']();
-        var L = date[_ + 'Milliseconds']();
-        var o = utc ? 0 : date.getTimezoneOffset();
-        var W = getWeek(date);
-        var N = getDayOfWeek(date);
-        var flags = {
-          d:    d,
-          dd:   pad(d),
-          ddd:  dateFormat.i18n.dayNames[D],
-          dddd: dateFormat.i18n.dayNames[D + 7],
-          m:    m + 1,
-          mm:   pad(m + 1),
-          mmm:  dateFormat.i18n.monthNames[m],
-          mmmm: dateFormat.i18n.monthNames[m + 12],
-          yy:   String(y).slice(2),
-          yyyy: y,
-          h:    H % 12 || 12,
-          hh:   pad(H % 12 || 12),
-          H:    H,
-          HH:   pad(H),
-          M:    M,
-          MM:   pad(M),
-          s:    s,
-          ss:   pad(s),
-          l:    pad(L, 3),
-          L:    pad(Math.round(L / 10)),
-          t:    H < 12 ? 'a'  : 'p',
-          tt:   H < 12 ? 'am' : 'pm',
-          T:    H < 12 ? 'A'  : 'P',
-          TT:   H < 12 ? 'AM' : 'PM',
-          Z:    gmt ? 'GMT' : utc ? 'UTC' : (String(date).match(timezone) || ['']).pop().replace(timezoneClip, ''),
-          o:    (o > 0 ? '-' : '+') + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
-          S:    ['th', 'st', 'nd', 'rd'][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10],
-          W:    W,
-          N:    N
-        };
-  
-        return mask.replace(token, function (match) {
-          if (match in flags) {
-            return flags[match];
-          }
-          return match.slice(1, match.length - 1);
-        });
-      };
-    })();
-
-  dateFormat.masks = {
-    'default':               'ddd mmm dd yyyy HH:MM:ss',
-    'shortDate':             'm/d/yy',
-    'mediumDate':            'mmm d, yyyy',
-    'longDate':              'mmmm d, yyyy',
-    'fullDate':              'dddd, mmmm d, yyyy',
-    'shortTime':             'h:MM TT',
-    'mediumTime':            'h:MM:ss TT',
-    'longTime':              'h:MM:ss TT Z',
-    'isoDate':               'yyyy-mm-dd',
-    'isoTime':               'HH:MM:ss',
-    'isoDateTime':           'yyyy-mm-dd\'T\'HH:MM:sso',
-    'isoUtcDateTime':        'UTC:yyyy-mm-dd\'T\'HH:MM:ss\'Z\'',
-    'expiresHeaderFormat':   'ddd, dd mmm yyyy HH:MM:ss Z'
-  };
-
-  // Internationalization strings
-  dateFormat.i18n = {
-    dayNames: [
-      'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
-      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-    ],
-    monthNames: [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-      'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
-    ]
-  };
-
-function pad(val, len) {
-  val = String(val);
-  len = len || 2;
-  while (val.length < len) {
-    val = '0' + val;
-  }
-  return val;
-}
-
-/**
- * Get the ISO 8601 week number
- * Based on comments from
- * http://techblog.procurios.nl/k/n618/news/view/33796/14863/Calculate-ISO-8601-week-and-year-in-javascript.html
- *
- * @param  {Object} `date`
- * @return {Number}
- */
-function getWeek(date) {
-  // Remove time components of date
-  var targetThursday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-  // Change date to Thursday same week
-  targetThursday.setDate(targetThursday.getDate() - ((targetThursday.getDay() + 6) % 7) + 3);
-
-  // Take January 4th as it is always in week 1 (see ISO 8601)
-  var firstThursday = new Date(targetThursday.getFullYear(), 0, 4);
-
-  // Change date to Thursday same week
-  firstThursday.setDate(firstThursday.getDate() - ((firstThursday.getDay() + 6) % 7) + 3);
-
-  // Check if daylight-saving-time-switch occured and correct for it
-  var ds = targetThursday.getTimezoneOffset() - firstThursday.getTimezoneOffset();
-  targetThursday.setHours(targetThursday.getHours() - ds);
-
-  // Number of weeks between target Thursday and first Thursday
-  var weekDiff = (targetThursday - firstThursday) / (86400000*7);
-  return 1 + Math.floor(weekDiff);
-}
-
-/**
- * Get ISO-8601 numeric representation of the day of the week
- * 1 (for Monday) through 7 (for Sunday)
- * 
- * @param  {Object} `date`
- * @return {Number}
- */
-function getDayOfWeek(date) {
-  var dow = date.getDay();
-  if(dow === 0) {
-    dow = 7;
-  }
-  return dow;
-}
-
-/**
- * kind-of shortcut
- * @param  {*} val
- * @return {String}
- */
-function kindOf(val) {
-  if (val === null) {
-    return 'null';
-  }
-
-  if (val === undefined) {
-    return 'undefined';
-  }
-
-  if (typeof val !== 'object') {
-    return typeof val;
-  }
-
-  if (Array.isArray(val)) {
-    return 'array';
-  }
-
-  return {}.toString.call(val)
-    .slice(8, -1).toLowerCase();
-};
-
-
-
-  if (true) {
-    !(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
-      return dateFormat;
-    }.call(exports, __webpack_require__, exports, module),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-  } else if (typeof exports === 'object') {
-    module.exports = dateFormat;
-  } else {
-    global.dateFormat = dateFormat;
-  }
-})(this);
 
 
 /***/ })

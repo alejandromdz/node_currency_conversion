@@ -1,4 +1,5 @@
 import 'whatwg-fetch';
+import { Store } from 'react-redux'
 
 export function fetchRates() {
   return (dispatch: any) => {
@@ -45,29 +46,28 @@ export function login(username: string, password: string) {
   }
 }
 
-export function postTransaction(data: any) {
+export function postTransaction(data: any, listRate: number) {
   return (dispatch: any) => {
     dispatch({ type: 'POST_TRANSACTION' });
+    // Convert to USD before sending
+    let { amount, concept, transaction } = data;
+    amount = amount / listRate;
 
-    var payload = new FormData();
-    payload.append("json", JSON.stringify(data));
     fetch('api/transactions', {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
       method: 'post',
-      body: JSON.stringify(data)
+      body: JSON.stringify({ amount, concept, transaction })
     })
-      .then(
-      () => {
-        dispatch({ type: 'POST_TRANSACTION_FULFILLED' });
-
-      }
-      )
-      .catch(
-      () => { dispatch({ type: 'POST_TRANSACTION_REJECTED' }) }
-      )
+      .then(response => response.json())
+      .catch((error) => {
+        dispatch({ type: 'POST_TRANSACTION_FAILED' })
+      })
+      .then(data => {
+        dispatch({ type: 'POST_TRANSACTION_FULFILLED', payload: data })
+      })
   }
 }
 
@@ -85,4 +85,8 @@ export function changeValue(newValue: number) {
 
 export function changeTransaction(newState: any) {
   return { type: 'CHANGE_TRANSACTION', newState };
+}
+
+export function changeListCurrency(newValue: any) {
+  return { type: 'CHANGE_LIST_CURRENCY', newValue }
 }

@@ -2,7 +2,6 @@ import * as React from 'react';
 import LoginForm from '../components/LoginForm'
 import List from '../components/List';
 import Calculator from '../components/Calculator';
-import Transaction from '../components/Transaction'
 import {connect} from 'react-redux';
 
 function mapStateToProps(state: any) {
@@ -20,7 +19,6 @@ class App extends React.Component<any,any>{
         return(
             <div>
             <List/>
-            <Transaction/>
             <Calculator/>
             </div> 
         )

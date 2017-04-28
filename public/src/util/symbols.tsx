@@ -1,4 +1,4 @@
-export default {
+const currencySymbols:any={
     AED: "د.إ",
     AFN: "؋",
     ALL: "L",
@@ -163,3 +163,5 @@ export default {
     ZWD: "Z$",
     BTC: "฿",
 }
+
+export default currencySymbols

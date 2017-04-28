@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -21,9 +21,12 @@
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
+    "@types/chai": "^3.5.1",
     "@types/dateformat": "^1.0.1",
     "@types/history": "^4.5.0",
+    "@types/jest": "^19.2.2",
     "@types/react": "^15.0.22",
+    "@types/react-addons-test-utils": "^0.14.18",
     "@types/react-dom": "^15.5.0",
     "@types/react-redux": "^4.4.39",
     "@types/react-router-dom": "^4.0.4",
@@ -31,7 +34,23 @@
     "@types/redux-logger": "^3.0.0",
     "@types/redux-thunk": "^2.1.0",
     "awesome-typescript-loader": "^3.1.2",
+    "chai": "^3.5.0",
+    "jest": "^19.0.2",
+    "react-addons-test-utils": "^15.5.1",
     "source-map-loader": "^0.2.1",
     "typescript": "^2.2.2"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "<rootDir>/preprocessor.js"
+    },
+    "testMatch": [
+      "**/__tests__/*.(ts|tsx|js)"
+    ]
   }
 }

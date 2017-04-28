@@ -26,7 +26,6 @@ module Route {
                     return res.send(JSON.stringify(transactions));
                 })
             });
-
         }
 
         put(req: express.Request, res: express.Response, next: express.NextFunction) {
