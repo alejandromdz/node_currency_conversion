@@ -14,8 +14,8 @@ function mapStateToProps(state: any) {
 class App extends React.Component<any,any>{
     
     render(){
-        //if (this.props.isLogged)
-        if(true)
+        if(this.props.isLogged)
+        
         return(
             <div>
             <List/>

@@ -5,16 +5,16 @@ import { changeTransaction, postTransaction } from '../actions';
 
 function mapStateToProps(state: any) {
     const { isFetching, didInvalidate, transactionData } = state.transaction;
-    const { listCurrency ,items} = state.purchase;
+    const { listCurrency, items } = state.purchase;
     return {
-        isFetching, didInvalidate, data: transactionData, listCurrency,items
+        isFetching, didInvalidate, data: transactionData, listCurrency, items
     }
 }
 
 class Transaction extends React.Component<any, any>{
     _onSubmit(evt: any) {
         evt.preventDefault();
-        this.props.dispatch(postTransaction(this.props.data,this.props.items[this.props.listCurrency]));
+        this.props.dispatch(postTransaction(this.props.data, this.props.items[this.props.listCurrency]));
     }
     _changeAmmount(evt: any) {
         const value = evt.target.value;
@@ -62,8 +62,10 @@ class Transaction extends React.Component<any, any>{
 
                 </select>
                 <div className="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div className="input-group-addon">{this.props.listCurrency}</div>
-                    <input className="form-control" type="text"
+                    <div style={{ border: 'white' }} className="input-group-addon">{this.props.listCurrency}</div>
+                    <input style={{ border: 'white' }}
+                        className="form-control"
+                        type="text"
                         onChange={this._changeAmmount.bind(this)}
                         onBlur={this._changeAmmount.bind(this)}
                         value={this.props.data.amount} />

@@ -1768,8 +1768,8 @@ var App = (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     App.prototype.render = function () {
-        //if (this.props.isLogged)
-        if (true)
+        if (this.props.isLogged)
+            //if(true)
             return (React.createElement("div", null,
                 React.createElement(List_1.default, null),
                 React.createElement(Calculator_1.default, null)));
@@ -2429,8 +2429,8 @@ var Transaction = (function (_super) {
                 React.createElement("option", { value: "Jamba Juice" }, "Jamba Juice"),
                 React.createElement("option", { value: "Wells Fargo" }, "Wells Fargo")),
             React.createElement("div", { className: "input-group mb-2 mr-sm-2 mb-sm-0" },
-                React.createElement("div", { className: "input-group-addon" }, this.props.listCurrency),
-                React.createElement("input", { className: "form-control", type: "text", onChange: this._changeAmmount.bind(this), onBlur: this._changeAmmount.bind(this), value: this.props.data.amount })),
+                React.createElement("div", { style: { border: 'white' }, className: "input-group-addon" }, this.props.listCurrency),
+                React.createElement("input", { style: { border: 'white' }, className: "form-control", type: "text", onChange: this._changeAmmount.bind(this), onBlur: this._changeAmmount.bind(this), value: this.props.data.amount })),
             React.createElement("input", { className: "form-control btn btn-success m-2", type: "submit" })));
     };
     return Transaction;
