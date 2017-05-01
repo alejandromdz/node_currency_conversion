@@ -301,8 +301,8 @@ exports.fetchRates = fetchRates;
 function fetchTransactions() {
     return function (dispatch) {
         dispatch({ type: 'FETCH_TRANSACTIONS' });
-        fetch('/api/transactions/all')
-            .then(function (response) { return response.json(); })
+        fetch('/api/transactions/all', { credentials: "same-origin" })
+            .then(function (res) { return res.json(); })
             .catch(function (error) {
             dispatch({ type: 'FETCH_TRANSACTIONS_FAILED' });
         })
@@ -316,8 +316,16 @@ function login(username, password) {
     var userLogin = { username: username, password: password };
     return function (dispatch) {
         dispatch({ type: 'LOGIN_REQUEST', payload: userLogin });
-        fetch('latest.json')
-            .then(function () {
+        fetch('/api/login', {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: "same-origin",
+            method: 'post',
+            body: JSON.stringify(userLogin)
+        })
+            .then(function (res) {
             dispatch({ type: 'LOGIN_REQUEST_FULFILLED' });
         })
             .catch(function () { dispatch({ type: 'LOGIN_REQUEST_FAILED' }); });
@@ -1769,7 +1777,6 @@ var App = (function (_super) {
     }
     App.prototype.render = function () {
         if (this.props.isLogged)
-            //if(true)
             return (React.createElement("div", null,
                 React.createElement(List_1.default, null),
                 React.createElement(Calculator_1.default, null)));

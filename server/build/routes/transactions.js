@@ -6,9 +6,8 @@ var Route;
         function Transactions() {
         }
         Transactions.prototype.all = function (req, res, next) {
-            transaction_1.default.find().lean().exec(function (err, transactions) {
-                return res.send(JSON.stringify(transactions));
-            });
+            transaction_1.default.find().lean().exec()
+                .then(function (transactions) { return res.send(JSON.stringify(transactions)); });
         };
         Transactions.prototype.get = function (req, res, next) {
             res.json("{title:'transactions', message:'GET: Transactions'}");
@@ -19,13 +18,10 @@ var Route;
                 transaction: req.body.transaction,
                 amount: req.body.amount
             });
-            transaction.save(function (err) {
-                if (err)
-                    return res.status(500).send(err);
-                transaction_1.default.find().lean().exec(function (err, transactions) {
-                    return res.send(JSON.stringify(transactions));
-                });
-            });
+            transaction.save()
+                .then(function () { return transaction_1.default.find().lean().exec(); })
+                .catch(function (err) { return res.status(500).send(err); })
+                .then(function (transactions) { return res.send(JSON.stringify(transactions)); });
         };
         Transactions.prototype.put = function (req, res, next) {
             res.json("{title:'transactions', message:'PUT: Transactions'}");

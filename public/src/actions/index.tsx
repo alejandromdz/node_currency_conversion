@@ -18,8 +18,8 @@ export function fetchRates() {
 export function fetchTransactions() {
   return (dispatch: any) => {
     dispatch({ type: 'FETCH_TRANSACTIONS' })
-    fetch('/api/transactions/all')
-      .then(response => response.json())
+    fetch('/api/transactions/all', { credentials: "same-origin" })
+      .then(res => res.json())
       .catch((error) => {
         dispatch({ type: 'FETCH_TRANSACTIONS_FAILED' })
       })
@@ -30,14 +30,21 @@ export function fetchTransactions() {
 }
 
 export function login(username: string, password: string) {
-  const userLogin = { username, password }
+  const userLogin = { username, password };
   return (dispatch: any) => {
     dispatch({ type: 'LOGIN_REQUEST', payload: userLogin });
-    fetch('latest.json')
+    fetch('/api/login', {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      credentials: "same-origin",
+      method: 'post',
+      body: JSON.stringify(userLogin)
+    })
       .then(
-      () => {
+      (res) => {
         dispatch({ type: 'LOGIN_REQUEST_FULFILLED' });
-
       }
       )
       .catch(

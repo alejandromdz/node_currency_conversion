@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose = require("mongoose");
 var bcrypt = require("bcrypt-nodejs");
 var userSchema = new mongoose.Schema({
-    email: { type: String, unique: true },
+    username: { type: String, unique: true },
     password: String,
 });
 /**
@@ -30,9 +30,7 @@ userSchema.pre('save', function save(next) {
 /**
  * Helper method for validating user's password.
  */
-userSchema.methods.comparePassword = function comparePassword(candidatePassword, cb) {
-    bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
-        cb(err, isMatch);
-    });
+userSchema.methods.comparePassword = function comparePassword(candidatePassword) {
+    return bcrypt.compareSync(candidatePassword, this.password);
 };
 exports.default = mongoose.model('user', userSchema);

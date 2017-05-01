@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var bodyParser = require("body-parser");
+var cookieParser = require("cookie-parser");
 var path = require("path");
 var http = require("http");
 var morgan = require("morgan");
@@ -9,6 +10,8 @@ var mongoose = require("mongoose");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var transactionsRouter = require("./routes/transactions");
+var loginRouter = require("./routes/login");
+var passport_1 = require("./passport");
 var HttpServer = (function () {
     function HttpServer() {
         this.app = express();
@@ -16,21 +19,28 @@ var HttpServer = (function () {
         this.IndexRoutes();
         this.UsersRoutes();
         this.TransactionRoutes();
+        this.LoginRoutes();
     }
     HttpServer.bootstrap = function () {
         return new HttpServer();
+    };
+    HttpServer.prototype.authenticate = function () {
+        return passport_1.default.authenticate('jwt');
     };
     HttpServer.prototype.ExpressConfiguration = function () {
         this.app.use(bodyParser.urlencoded({ extended: false }));
         this.app.use(bodyParser.json());
         this.app.use(morgan('dev'));
+        this.app.use(cookieParser());
+        this.app.use(passport_1.default.initialize());
+        this.app.use(passport_1.default.session());
+        // serve static files
+        this.app.use(express.static(path.join(__dirname + '/../../public')));
         this.app.use(function (err, req, res, next) {
             var error = new Error("Not Found");
             err.status = 404;
             next(err);
         });
-        // serve static files
-        this.app.use(express.static(path.join(__dirname + '/../../public')));
     };
     HttpServer.prototype.IndexRoutes = function () {
         this.router = express.Router();
@@ -53,7 +63,13 @@ var HttpServer = (function () {
         var transactions = new transactionsRouter.Transactions();
         this.router.get("/all", transactions.all);
         this.router.post("/", transactions.post);
-        this.app.use("/api/transactions", this.router);
+        this.app.use("/api/transactions", this.authenticate(), this.router);
+    };
+    HttpServer.prototype.LoginRoutes = function () {
+        this.router = express.Router();
+        var login = new loginRouter.Login();
+        this.router.post("/", login.post);
+        this.app.use("/api/login", this.router);
     };
     return HttpServer;
 }());

@@ -1,6 +1,7 @@
 
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import * as cookieParser from 'cookie-parser';
 import * as path from 'path';
 import * as http from 'http';
 import * as morgan from 'morgan';
@@ -8,6 +9,9 @@ import * as mongoose from 'mongoose';
 import * as indexRouter from "./routes/index";
 import * as usersRouter from "./routes/users";
 import * as transactionsRouter from "./routes/transactions"
+import * as loginRouter from "./routes/login";
+
+import passport from './passport';
 import User from './models/user';
 
 class HttpServer {
@@ -19,27 +23,34 @@ class HttpServer {
     }
     constructor() {
         this.app = express();
-
         this.ExpressConfiguration();
-
         this.IndexRoutes();
         this.UsersRoutes();
         this.TransactionRoutes();
+        this.LoginRoutes();
+       
     }
+    private authenticate(){
+        return passport.authenticate('jwt')
+    }
+
     private ExpressConfiguration() {
         this.app.use(bodyParser.urlencoded({ extended: false }));
         this.app.use(bodyParser.json());
-
         this.app.use(morgan('dev'));
+        
+        this.app.use(cookieParser());
+        this.app.use(passport.initialize());
+        this.app.use(passport.session());
+
+        // serve static files
+        this.app.use(express.static(path.join(__dirname + '/../../public')));
         this.app.use(function (err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
             var error = new Error("Not Found");
             err.status = 404;
             next(err);
-        });
-
-        // serve static files
-        this.app.use(express.static(path.join(__dirname + '/../../public')))
-    }
+        }); 
+}
     private IndexRoutes() {
         this.router = express.Router();
         var index: indexRouter.Index = new indexRouter.Index();
@@ -62,9 +73,15 @@ class HttpServer {
         var transactions: transactionsRouter.Transactions = new transactionsRouter.Transactions();
         this.router.get("/all", transactions.all);
         this.router.post("/", transactions.post);
-
-        this.app.use("/api/transactions", this.router);
+        this.app.use("/api/transactions",this.authenticate(),this.router);
     }
+    private LoginRoutes(){
+        this.router=express.Router();
+        var login:loginRouter.Login=new loginRouter.Login()
+        this.router.post("/",login.post)
+        this.app.use("/api/login",this.router);
+    }
+
 }
 
 const port: number = process.env.PORT || 8080;

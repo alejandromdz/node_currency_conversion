@@ -5,9 +5,9 @@ module Route {
     export class Transactions {
 
         all(req: express.Request, res: express.Response, next: express.NextFunction) {
-            Transaction.find().lean().exec(function (err, transactions) {
-                return res.send(JSON.stringify(transactions));
-            })
+
+            Transaction.find().lean().exec()
+            .then(transactions=>res.send(JSON.stringify(transactions)));
         }
 
         get(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -20,12 +20,11 @@ module Route {
                 transaction: req.body.transaction,
                 amount: req.body.amount
             });
-            transaction.save(function (err) {
-                if (err) return res.status(500).send(err);
-                Transaction.find().lean().exec(function (err, transactions) {
-                    return res.send(JSON.stringify(transactions));
-                })
-            });
+
+            transaction.save()
+                .then(() => Transaction.find().lean().exec())
+                .catch(err => res.status(500).send(err))
+                .then(transactions => res.send(JSON.stringify(transactions)));
         }
 
         put(req: express.Request, res: express.Response, next: express.NextFunction) {
