@@ -44,6 +44,9 @@ export function login(username: string, password: string) {
     })
       .then(
       (res) => {
+         if (!res.ok) {
+            throw Error(res.statusText);
+        }
         dispatch({ type: 'LOGIN_REQUEST_FULFILLED' });
       }
       )

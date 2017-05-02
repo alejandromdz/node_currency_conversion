@@ -26,19 +26,6 @@ passport.use(new Strategy(opts, function (jwt_payload, done) {
     .catch(err => done(err, false))
 }));
 
-/*  User.findOne({ username: jwt_payload.sub }, function (err, user) {
-    if (err) {
-      return done(err, false);
-    }
-    if (user) {
-      done(null, user);
-    } else {
-      done(null, false);
-    }
-  });
-}));*/
-
-
 passport.serializeUser(function (user: any, cb) {
   cb(null, user.id);
 });

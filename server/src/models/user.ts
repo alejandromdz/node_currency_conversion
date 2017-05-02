@@ -6,9 +6,6 @@ const userSchema = new mongoose.Schema({
   password: String,
 });
 
-/**
- * Password hash middleware.
- */
 userSchema.pre('save', function save(next) {
   const user = this;
   if (!user.isModified('password')) { return next(); }
@@ -22,9 +19,6 @@ userSchema.pre('save', function save(next) {
   });
 });
 
-/**
- * Helper method for validating user's password.
- */
 userSchema.methods.comparePassword = function comparePassword(candidatePassword:string) {
    return bcrypt.compareSync(candidatePassword, this.password);
 };

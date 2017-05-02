@@ -1,18 +1,16 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { renderIntoDocument, isDOMComponent } from 'react-dom/test-utils';
+
 import { Provider } from 'react-redux';
 import { createStore, combineReducers } from 'redux'
 
 import App from '../components/App';
-
 
 import purchase from '../reducers/purchase';
 import login from '../reducers/login';
 import transaction from '../reducers/transaction';
 
 import { expect } from 'chai';
-
+import { mount } from 'enzyme';
 
 const reducer = combineReducers({
     purchase,
@@ -22,12 +20,17 @@ const reducer = combineReducers({
 const store = createStore(reducer);
 
 describe('App Test', function () {
-    it('Should show Login at beginning', function () {
-        const app: any = renderIntoDocument(
+
+     const wrapper =mount(
             <Provider store={store}>
                 <App />
             </Provider>);
-        const appNode = ReactDOM.findDOMNode(app);
-        expect(appNode.innerHTML).to.match(/Login/ig);
+    it('Should show Login at beginning', function () {
+       
+        expect(wrapper.find('button').html()).to.match(/Login/ig);
+    })
+    it('Should Login', function () {
+       
+        expect(wrapper.find('button').html()).to.match(/Login/ig);
     })
 })

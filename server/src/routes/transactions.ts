@@ -5,7 +5,6 @@ module Route {
     export class Transactions {
 
         all(req: express.Request, res: express.Response, next: express.NextFunction) {
-
             Transaction.find().lean().exec()
             .then(transactions=>res.send(JSON.stringify(transactions)));
         }

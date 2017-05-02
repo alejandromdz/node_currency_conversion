@@ -24,17 +24,6 @@ passport.use(new passport_jwt_1.Strategy(opts, function (jwt_payload, done) {
     })
         .catch(function (err) { return done(err, false); });
 }));
-/*  User.findOne({ username: jwt_payload.sub }, function (err, user) {
-    if (err) {
-      return done(err, false);
-    }
-    if (user) {
-      done(null, user);
-    } else {
-      done(null, false);
-    }
-  });
-}));*/
 passport.serializeUser(function (user, cb) {
     cb(null, user.id);
 });

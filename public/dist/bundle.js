@@ -326,6 +326,9 @@ function login(username, password) {
             body: JSON.stringify(userLogin)
         })
             .then(function (res) {
+            if (!res.ok) {
+                throw Error(res.statusText);
+            }
             dispatch({ type: 'LOGIN_REQUEST_FULFILLED' });
         })
             .catch(function () { dispatch({ type: 'LOGIN_REQUEST_FAILED' }); });

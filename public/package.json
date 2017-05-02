@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/chai": "^3.5.1",
     "@types/dateformat": "^1.0.1",
+    "@types/enzyme": "^2.7.9",
     "@types/history": "^4.5.0",
     "@types/jest": "^19.2.2",
     "@types/react": "^15.0.22",
@@ -35,6 +36,7 @@
     "@types/redux-thunk": "^2.1.0",
     "awesome-typescript-loader": "^3.1.2",
     "chai": "^3.5.0",
+    "enzyme": "^2.8.2",
     "jest": "^19.0.2",
     "react-addons-test-utils": "^15.5.1",
     "source-map-loader": "^0.2.1",
@@ -51,6 +53,10 @@
     },
     "testMatch": [
       "**/__tests__/*.(ts|tsx|js)"
+    ],
+    "unmockedModulePathPatterns": [
+      "node_modules/react/",
+      "node_modules/enzyme/"
     ]
   }
 }
