@@ -62,7 +62,7 @@ class Transaction extends React.Component<any, any>{
 
                 </select>
                 <div className="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div style={{ border: 'white' }} className="input-group-addon">{this.props.listCurrency}</div>
+                    <div style={{ border: 'white' }} className="input-group-addon m-2">{this.props.listCurrency}</div>
                     <input style={{ border: 'white' }}
                         className="form-control"
                         type="text"

@@ -43,8 +43,8 @@ describe('Calculator Test', function () {
 
     it("Should convert 25 USD to MXN and show rate",function(){
         const formText:string=wrapper.find('form').text();
-        expect(formText).to.match(/470\.84495/);
-        expect(formText).to.match(/18\.833798/);
+        expect(formText).to.match(/MXN.+\$.+470\.84495/);
+        expect(formText).to.match(/Rate:18\.833798/);
         
     });
     
