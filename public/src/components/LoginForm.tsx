@@ -71,7 +71,9 @@ class LoginForm extends React.Component<any, void> {
                             type="submit"
                             disabled={this.props.isRequesting}>Login</button>
                     </div>
+                    <br/>user/12345
                 </form>
+                
         );
     }
 }

@@ -61,8 +61,8 @@ class Transaction extends React.Component<any, any>{
                     <option value="Wells Fargo">Wells Fargo</option>
 
                 </select>
-                <div className="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div style={{ border: 'white' }} className="input-group-addon m-2">{this.props.listCurrency}</div>
+                <div className="input-group m-2">
+                    <div style={{ border: 'white' }} className="input-group-addon">{this.props.listCurrency}</div>
                     <input style={{ border: 'white' }}
                         className="form-control"
                         type="text"
